@@ -1,34 +1,40 @@
-import Button from "./Button";
-import styles from "./App.module.css";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 function App() {
-  const [counter, setCounter] = useState(0);
-  const [keyword, setKeyword] = useState("");
-  const onChange = (event) => {
-    setKeyword(event.target.value);
+  const [loading, setLoading] = useState(true);
+  const [movies, setMovies] = useState([]);
+  const getMovies = async () => {
+    const res = await fetch(
+      `https://yts.mx/api/v2/list_movies.json?minimum_rating=9&sort_by=year`
+    );
+    const json = await res.json();
+    setMovies(json.data.movies);
+    setLoading(false);
   };
-  const onClick = () => {
-    setCounter((prev) => prev + 1);
-  };
-  console.log("i run alltime");
-  const iRunOnlyOnce = () => {
-    console.log("i run onlyonce");
-  };
-  useEffect(iRunOnlyOnce, []);
   useEffect(() => {
-    console.log("search for", keyword);
-  }, [keyword]);
+    getMovies();
+  }, []);
+  console.log(movies);
   return (
     <div>
-      <input
-        value={keyword}
-        onChange={onChange}
-        type="text"
-        placeholder="Search..."
-      />
-      <h1 className={styles.title}>{counter}</h1>
-      <button onClick={onClick}> click me </button>
+      {loading ? (
+        <h1>Loading...</h1>
+      ) : (
+        <div>
+          {movies.map((movie) => (
+            <div key={movie.id}>
+              <img src={movie.medium_cover_image} />
+              <h2>{movie.title}</h2>
+              <p>{movie.summary}</p>
+              <ul>
+                {movie.genres.map((g) => (
+                  <li key={g}>{g}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
